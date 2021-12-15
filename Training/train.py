@@ -4,6 +4,7 @@ import GraphSAGE
 import GAT
 import GCN
 import DNN
+import node2vec_new
 
 
 def main(args):
@@ -15,6 +16,8 @@ def main(args):
         GCN.main(args)
     elif args.model_name == 'DNN':
         DNN.main(args)
+    elif args.model_name == 'node2vec_new':
+        node2vec_new.main(args)
 
 
 if __name__ == '__main__':
@@ -25,7 +28,7 @@ if __name__ == '__main__':
     # 选择group聚合策略
     parser.add_argument("--aggregate_mode", type=str, default='average',    
                         help="choose a group aggregation strategy")
-    parser.add_argument("--model_name", type=str, default='GCN',
+    parser.add_argument("--model_name", type=str, default='DNN',
                         help="choose a model")
     parser.add_argument("--label_rate", type=float, default=0.05,    
                         help="label rate")
@@ -42,9 +45,9 @@ if __name__ == '__main__':
                         help="dropout probability")
     parser.add_argument("--gpu", type=int, default=-1,
                         help="gpu")
-    parser.add_argument("--lr", type=float, default=1e-3,
+    parser.add_argument("--lr", type=float, default=2e-2,
                         help="learning rate")
-    parser.add_argument("--n-epochs", type=int, default=5,
+    parser.add_argument("--n-epochs", type=int, default=200,
                         help="number of training epochs")
     parser.add_argument("--n-hidden", type=int, default=128,
                         help="number of hidden GraphSAGE units")
@@ -65,6 +68,46 @@ if __name__ == '__main__':
     parser.add_argument("--fc_hidden_2", type=int, default=8,
                         help="number of hidden fc2 units")
 
+    # Parses the node2vec arguments.
+    parser.add_argument('--input', nargs='?', default='graph/karate.edgelist',
+                        help='Input graph path')
+
+    parser.add_argument('--output', nargs='?', default='../emb/Node2vec.emb',
+                        help='Embeddings path')
+
+    parser.add_argument('--dimensions', type=int, default=128,
+                        help='Number of dimensions. Default is 128.')
+
+    parser.add_argument('--walk-length', type=int, default=80,
+                        help='Length of walk per source. Default is 80.')
+
+    parser.add_argument('--num-walks', type=int, default=10,
+                        help='Number of walks per source. Default is 10.')
+
+    parser.add_argument('--window-size', type=int, default=10,
+                        help='Context size for optimization. Default is 10.')
+
+    parser.add_argument('--iter', default=1, type=int,
+                        help='Number of epochs in SGD')
+
+    parser.add_argument('--workers', type=int, default=8,
+                        help='Number of parallel workers. Default is 8.')
+
+    parser.add_argument('--p', type=float, default=1,
+                        help='Return hyperparameter. Default is 1.')
+
+    parser.add_argument('--q', type=float, default=1,
+                        help='Inout hyperparameter. Default is 1.')
+
+    parser.add_argument('--weighted', dest='weighted', action='store_true',
+                        help='Boolean specifying (un)weighted. Default is unweighted.')
+    parser.add_argument('--unweighted', dest='unweighted', action='store_false')
+    parser.set_defaults(weighted=False)
+
+    parser.add_argument('--directed', dest='directed', action='store_true',
+                        help='Graph is (un)directed. Default is undirected.')
+    parser.add_argument('--undirected', dest='undirected', action='store_false')
+    parser.set_defaults(directed=False)
     args = parser.parse_args()
     
     main(args)

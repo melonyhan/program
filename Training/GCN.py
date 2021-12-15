@@ -92,6 +92,7 @@ def main(args):
     g, GroupAndLabel = data_load(args.network_name, args.label_rate, args.train_rate, args.label_ratio)
     features = g.ndata['feat']
     labels = GroupAndLabel['label']  # [15018]
+    print(labels[0:30])
     train_mask = GroupAndLabel['train_mask']
     test_mask = GroupAndLabel['test_mask']
     group_rank = GroupAndLabel['group_rank']  # [[86, 107, 121, 160, 979], 468]*15018

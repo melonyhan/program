@@ -53,7 +53,16 @@
 
  3、GCN.py                说明：已修改完成，在网络email-Eu-core上测试通过。使用命令  python train.py email-Eu-core  来实现在该网络上GCN模型的训练和测试。 
 
+三、测试阶段
+node2vec
+lr:2e-2  epoch:200
+Loss 0.2642 TP:529
+Test Accuracy 0.8935   Test Precision 0.8817   Test Recall 0.6622  F1 score 0.7563
 
+DNN
+lr:2e-2  epoch:200 40轮后TP有值
+Loss 0.2661 | TP 461
+Test Accuracy 0.8990   Test Precision 1.0000   Test Recall 0.5956  F1 score 0.7465
 
 
 

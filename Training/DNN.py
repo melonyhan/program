@@ -20,13 +20,9 @@ class Net(nn.Module):
         super(Net,self).__init__()
         self.group_list = group_list
         self.network_name = network_name
-        self.l1 = nn.Linear(in_feats, 256)
-        self.l2 = nn.Linear(256, 128)
-        self.l3 = nn.Linear(128, 64)
-        self.l4 = nn.Linear(64, 32)
-        self.l5 = nn.Linear(32, 16)
-        self.l6 = nn.Linear(16, 8)
-        self.classify = nn.Linear(8, n_classes)
+        self.l1 = nn.Linear(in_feats, 64)
+        self.l2 = nn.Linear(64, 32)
+        self.classify = nn.Linear(32, n_classes)
         # self.l1 = nn.Linear(in_feats, 64)
         # self.l2 = nn.Linear(64, 32)
         # self.l3 = nn.Linear(32, 16)
@@ -37,10 +33,10 @@ class Net(nn.Module):
         print("DNN forward")
         x = F.relu(self.l1(x))
         x = F.relu(self.l2(x))
-        x = F.relu(self.l3(x))
-        x = F.relu(self.l4(x))
-        x = F.relu(self.l5(x))
-        x = F.relu(self.l6(x))
+        # x = F.relu(self.l3(x))
+        # x = F.relu(self.l4(x))
+        # x = F.relu(self.l5(x))
+        # x = F.relu(self.l6(x))
         if Aggregate_mode == 'average':
             newh = logits2Grouplogits(x, self.group_list, self.network_name)
         elif Aggregate_mode == 'convolution':
@@ -108,16 +104,15 @@ def main(args):
         test_mask = test_mask.cuda()
         print("use cuda:", args.gpu)
 
-
-    # #Initialize the model
+    # Initialize the model
     model = Net(in_feats, n_classes, args.network_name, group_rank)
     if cuda:
         model.cuda()
-        # use optimizer
+    # use optimizer
     loss_fcn = F.cross_entropy
     optimizer = torch.optim.Adam(model.parameters(),
-                                     lr=args.lr,
-                                     weight_decay=args.weight_decay)
+                                 lr=args.lr,
+                                 weight_decay=args.weight_decay)
     # # Define loss criterion
     # criterion = F.cross_entropy
     # # Define the optimizer
@@ -129,7 +124,7 @@ def main(args):
             t0 = time.time()
         # forward
         logits = model(features, args.aggregate_mode)
-        print(logits[:2])
+        # print(logits[:2])
         loss = loss_fcn(logits[train_mask], labels[train_mask])
         # print(train_mask,train_nid)
         optimizer.zero_grad()
@@ -137,8 +132,9 @@ def main(args):
         optimizer.step()
         if epoch >= 3:
             dur.append(time.time() - t0)
-
-        print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f}".format(epoch, np.mean(dur), loss.item()))
+        _, indices = torch.max(logits, dim=1)
+        TP = torch.sum(indices & labels)
+        print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | TP {:d}".format(epoch, np.mean(dur), loss.item(), TP))
 
     # model = model.cpu()
     # features = features.cpu()

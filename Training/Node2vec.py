@@ -1,7 +1,8 @@
-import networkx as nx
-import numpy as np
-import random
 
+import argparse
+from gensim.models import Word2Vec
+
+from data_load import *
 p = 1
 q = 2
 
@@ -137,12 +138,68 @@ def simulate_walks(g, num_walks, walk_length, alias_nodes, alias_edges):
     return walks
 
 
-if __name__ == '__main__':
-    g = gen_graph()
+# def learn_embeddings(walks):
+#     '''
+#     Learn embeddings by optimizing the Skipgram objective using SGD.
+#     '''
+#     walks = [map(str, walk) for walk in walks]
+#     model = Word2Vec(walks, 128, window=10, min_count=0, sg=1, workers=8)
+#     # model.save_word2vec_format(args.output)
+#     return
+
+
+def get_embeddings(w2v_model, graph):
+    count = 0
+    invalid_word = []
+    _embeddings = {}
+    for word in graph.nodes():
+        if word in w2v_model.wv:
+            _embeddings[word] = w2v_model.wv[word]
+        else:
+            invalid_word.append(word)
+            count += 1
+    print("无效word", len(invalid_word))
+    print("有效embedding", len(_embeddings))
+    # print(_embeddings)
+    return _embeddings
+
+
+def main(args):
+    print("main begin")
+    with open('../Data/networkx/{}-networkx.json'.format(args.network_name), 'r') as fr:
+        G_data = json.load(fr)
+    G = json_graph.node_link_graph(G_data)
+    # g = dgl.from_networkx(G)
+    g = nx.Graph(G)
+    print(g)
+    # g, GroupAndLabel = data_load(args.network_name, args.label_rate, args.train_rate, args.label_ratio)
     alias_nodes, alias_edges = preprocess_transition_probs(g)
-    walks = simulate_walks(g, 2, 3, alias_nodes, alias_edges)
-    print(walks)
-    # Walk iteration:
-    # iteration: 1 / 2
-    # iteration: 2 / 2
-    # [[5, 4, 1], [2, 3, 2], [4, 1, 2], [3, 2, 3], [1, 2, 3], [4, 1, 2], [3, 2, 3], [1, 2, 3], [2, 3, 2], [5, 4, 1]]
+    walks = simulate_walks(g, 1, 3, alias_nodes, alias_edges)
+
+    # print(walks)
+    # kwargs = {"sentences": walks, "min_count": 0, "vector_size": 128,
+    #           "sg": 1, "hs": 0, "workers": 3, "window": 5, "epochs": 3}
+    # model = Word2Vec(**kwargs)
+    # embeddings = get_embeddings(model, g)
+# if __name__ == '__main__':
+#     g = gen_graph()
+#     # args = parser.parse_args()
+#     # g, GroupAndLabel = data_load(args.network_name, args.label_rate, args.train_rate, args.label_ratio)
+#
+#     print(g)
+#     alias_nodes, alias_edges = preprocess_transition_probs(g)
+#     walks = simulate_walks(g, 2, 3, alias_nodes, alias_edges)
+#
+#     # w2v_model = Word2Vec(walks, 128, window=10, min_count=0, sg=1, workers=8)
+#     print(walks)
+#     kwargs = {"sentences": walks, "min_count": 0, "vector_size": 64,
+#               "sg": 1, "hs": 0, "workers": 3, "window": 5, "epochs": 3}
+#     model = Word2Vec(**kwargs)
+#     embeddings = get_embeddings(model, g)
+#     # print(w2v_model)
+#     # Walk iteration:
+#     # iteration: 1 / 2
+#     # iteration: 2 / 2
+#     # [[5, 4, 1], [2, 3, 2], [4, 1, 2], [3, 2, 3], [1, 2, 3], [4, 1, 2], [3, 2, 3], [1, 2, 3], [2, 3, 2], [5, 4, 1]]
+#
+#
